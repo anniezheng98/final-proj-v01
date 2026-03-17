@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>New York City Building Footprints</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #d3d3d3;
+      font-family: "Hanken Grotesk", sans-serif;
+      color: #000000;
+    }
+
+    header {
+      height: 24px;
+      padding: 0 48px 0 8px;
+      border-bottom: 1px solid #000000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: 0.6rem;
+      font-weight: normal;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    h1 span {
+      color: #000000;
+      font-size: 0.6rem;
+      margin-left: 12px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0;
+      align-items: center;
+    }
+
+    .controls-divider {
+      width: 1px;
+      height: 24px;
+      background: #000000;
+      flex-shrink: 0;
+    }
+
+    .controls label {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #000000;
+      margin-right: 4px;
+    }
+
+    .controls select {
+      font-size: 0.6rem;
+      font-family: "Hanken Grotesk", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      height: 24px;
+      padding: 4px 4px 4px 8px;
+      border: 1px solid #d0d0cb;
+      background: #d3d3d3;
+      border-radius: 0;
+      cursor: pointer;
+      appearance: none;
+      box-sizing: border-box;
+      width: auto;
+      min-width: 0;
+      color: #000000;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .controls select:hover,
+    .controls select:focus {
+      outline: none;
+      background: #000000;
+      color: #d3d3d3;
+      border-color: #000000;
+    }
+
+    #count {
+      font-size: 0.6rem;
+      color: #000000;
+      margin-left: auto;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    #gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+      gap: 0;
+      padding: 0;
+    }
+
+    .footprint-cell {
+      background: #d3d3d3;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      cursor: pointer;
+      transition: background 0.15s;
+      color: #000000;
+      position: relative;
+    }
+
+    .footprint-cell:hover {
+      background: #000000;
+      color: #d3d3d3;
+    }
+
+    .footprint-cell svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .tooltip {
+      display: none;
+      position: fixed;
+      background: #d3d3d3;
+      color: #000000;
+      font-family: "Hanken Grotesk", sans-serif;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 8px 12px;
+      pointer-events: none;
+      z-index: 100;
+      line-height: 1.6;
+      min-width: 140px;
+      border: 1px solid #000000;
+    }
+
+    .tooltip.visible { display: block; }
+
+    #loading {
+      padding: 80px 48px;
+      font-size: 0.6rem;
+      color: #000000;
+    }
+
+    body { padding-bottom: 44px; }
+
+    footer.toolbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0 8px 0 0;
+      background: #d3d3d3;
+      border-top: 1px solid #000000;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      z-index: 50;
+    }
+
+    footer.toolbar .controls {
+      margin: 0;
+    }
+
+    .detail-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: #d3d3d3;
+      flex-direction: column;
+    }
+
+    .detail-overlay.visible {
+      display: flex;
+    }
+
+    .detail-header {
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px 0 8px;
+      border-bottom: 1px solid #000000;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+
+    .detail-label {
+      font-size: 0.6rem;
+      font-weight: normal;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .detail-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 24px;
+      padding: 0;
+      border: none;
+      background: none;
+      border-radius: 0;
+      cursor: pointer;
+      font-size: 0.6rem;
+      font-family: "Hanken Grotesk", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      line-height: 1;
+      color: #000000;
+    }
+
+    .detail-close:hover {
+      color: #666666;
+    }
+
+    .detail-body {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .detail-left {
+      width: 38%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      cursor: pointer;
+      border-right: 1px solid #000000;
+    }
+
+    .detail-left svg {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .detail-right {
+      flex: 1;
+      min-width: 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 8px;
+      padding: 32px;
+      align-content: center;
+      justify-content: center;
+      overflow: auto;
+    }
+
+    .detail-right .footprint-cell {
+      aspect-ratio: 1;
+      max-height: 100%;
+      min-height: 0;
+    }
+
+    .detail-right .footprint-cell:hover {
+      background: #d3d3d3;
+      color: blue;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>New York City Building Footprints</h1>
+</header>
+<footer class="toolbar">
+  <div class="controls">
+    <select id="borough">
+      <option value="">All boroughs</option>
+      <option value="1">Manhattan</option>
+      <option value="2">Bronx</option>
+      <option value="3">Brooklyn</option>
+      <option value="4">Queens</option>
+      <option value="5">Staten Island</option>
+    </select>
+    <span class="controls-divider" aria-hidden="true"></span>
+    <select id="sort">
+      <option value="area-desc">Area — largest first</option>
+      <option value="area-asc">Area — smallest first</option>
+      <option value="year-asc">Year built — oldest first</option>
+      <option value="year-desc">Year built — newest first</option>
+      <option value="height-desc">Height — tallest first</option>
+      <option value="height-asc">Height — shortest first</option>
+    </select>
+    <span class="controls-divider" aria-hidden="true"></span>
+    <select id="scale">
+      <option value="normalized">Normalized</option>
+      <option value="true-scale">True scale</option>
+    </select>
+    <span class="controls-divider" aria-hidden="true"></span>
+  </div>
+  <div id="count"></div>
+</footer>
+
+<div id="loading">Loading footprints...</div>
+<div id="gallery"></div>
+<div id="detail-overlay" class="detail-overlay" aria-hidden="true">
+  <div class="detail-header">
+    <span class="detail-label" id="detail-label">Similar Footprints</span>
+    <button type="button" class="detail-close" id="detail-close" aria-label="Close">CLOSE</button>
+  </div>
+  <div class="detail-body">
+    <div class="detail-left" id="detail-left" title="Click to close"></div>
+    <div class="detail-right" id="detail-similar-grid"></div>
+  </div>
+</div>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+  const gallery = document.getElementById("gallery");
+  const tooltip = document.getElementById("tooltip");
+  const countEl = document.getElementById("count");
+  const sortEl = document.getElementById("sort");
+  const scaleEl = document.getElementById("scale");
+  const boroughEl = document.getElementById("borough");
+
+  let buildings = [];
+  let normalized = true;
+  let selectedBoro = "";
+
+  const selectMeasure = document.createElement("span");
+  selectMeasure.setAttribute("aria-hidden", "true");
+  selectMeasure.style.cssText = "position:absolute;left:-9999px;visibility:hidden;white-space:nowrap;font-family:'Hanken Grotesk',sans-serif;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.06em;";
+  document.body.appendChild(selectMeasure);
+
+  function fitSelectWidth(select) {
+    const opt = select.options[select.selectedIndex];
+    const text = opt ? opt.textContent : "";
+    selectMeasure.textContent = text;
+    const w = selectMeasure.offsetWidth + 8 + 4 + 2;
+    select.style.width = w + "px";
+  }
+
+  fitSelectWidth(sortEl);
+  fitSelectWidth(scaleEl);
+  fitSelectWidth(boroughEl);
+
+  boroughEl.addEventListener("change", function() {
+    selectedBoro = this.value;
+    fitSelectWidth(boroughEl);
+    renderGallery();
+    this.blur();
+  });
+  sortEl.addEventListener("change", () => {
+    fitSelectWidth(sortEl);
+    renderGallery();
+    sortEl.blur();
+  });
+  scaleEl.addEventListener("change", function() {
+    normalized = this.value === "normalized";
+    fitSelectWidth(scaleEl);
+    renderGallery();
+    this.blur();
+  });
+
+  // --- Shape features from SVG path ---
+  function parsePathPoints(d) {
+    if (!d || typeof d !== "string") return [];
+    const points = [];
+    const tokens = d.trim().replace(/,/g, " ").split(/\s+/);
+    let i = 0;
+    while (i < tokens.length) {
+      const a = parseFloat(tokens[i]), b = parseFloat(tokens[i + 1]);
+      if (!isNaN(a) && !isNaN(b)) {
+        points.push([a, b]);
+        i += 2;
+      } else if (/^[MLZHVCSQTA]$/i.test(tokens[i])) {
+        i += 1;
+      } else {
+        i += 1;
+      }
+    }
+    return points;
+  }
+
+  function pathPerimeter(points) {
+    let p = 0;
+    for (let i = 0; i < points.length - 1; i++) {
+      const [x1, y1] = points[i], [x2, y2] = points[i + 1];
+      p += Math.hypot(x2 - x1, y2 - y1);
+    }
+    return p;
+  }
+
+  function pathArea(points) {
+    let a = 0;
+    const n = points.length;
+    for (let i = 0; i < n - 1; i++) {
+      a += points[i][0] * points[i + 1][1] - points[i + 1][0] * points[i][1];
+    }
+    return Math.abs(a) / 2;
+  }
+
+  function shapeFeatures(b) {
+    if (b._shapeFeatures) return b._shapeFeatures;
+    let points = parsePathPoints(b.path);
+    if (points.length < 3) {
+      b._shapeFeatures = { aspectRatio: 0.5, compactness: 0.5, pointCount: 0 };
+      return b._shapeFeatures;
+    }
+    if (points.length > 0 && (points[0][0] !== points[points.length - 1][0] || points[0][1] !== points[points.length - 1][1])) {
+      points = points.concat([points[0]]);
+    }
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const [x, y] of points) {
+      minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+    }
+    const w = maxX - minX || 1, h = maxY - minY || 1;
+    const aspectRatio = Math.min(w, h) / Math.max(w, h);
+    const perimeter = pathPerimeter(points);
+    const area = pathArea(points);
+    const compactness = perimeter > 0 ? (4 * Math.PI * area) / (perimeter * perimeter) : 0.5;
+    const pointCount = points.length;
+    b._shapeFeatures = { aspectRatio, compactness, pointCount };
+    return b._shapeFeatures;
+  }
+
+  function normalizeFeatures(buildings) {
+    const keys = ["aspectRatio", "compactness", "pointCount"];
+    const min = { aspectRatio: 1, compactness: 1, pointCount: Infinity };
+    const max = { aspectRatio: 0, compactness: 0, pointCount: 0 };
+    buildings.forEach(b => {
+      const f = shapeFeatures(b);
+      keys.forEach(k => {
+        min[k] = Math.min(min[k], f[k]);
+        max[k] = Math.max(max[k], f[k]);
+      });
+    });
+    const range = keys.map(k => ({ k, r: max[k] - min[k] || 1 }));
+    return (b) => {
+      const f = shapeFeatures(b);
+      return range.map(({ k, r }) => (f[k] - min[k]) / r);
+    };
+  }
+
+  let getNormalizedFeatures = null;
+
+  function similarityDistance(a, b) {
+    if (!getNormalizedFeatures) return 0;
+    const va = getNormalizedFeatures(a), vb = getNormalizedFeatures(b);
+    let sum = 0;
+    for (let i = 0; i < va.length; i++) sum += (va[i] - vb[i]) ** 2;
+    return Math.sqrt(sum);
+  }
+
+  function getSimilarBuildings(seed, n) {
+    const rest = buildings.filter(b => b !== seed);
+    const withScore = rest.map(b => ({
+      building: b,
+      similarity: similarityDistance(seed, b)
+    }));
+    withScore.sort((a, b) => a.similarity - b.similarity);
+    return withScore.slice(0, n).map(x => x.building);
+  }
+
+  const detailOverlay = document.getElementById("detail-overlay");
+  const detailLeft = document.getElementById("detail-left");
+  const detailSimilarGrid = document.getElementById("detail-similar-grid");
+  const detailLabel = document.getElementById("detail-label");
+  const detailCloseBtn = document.getElementById("detail-close");
+
+  detailCloseBtn.addEventListener("click", closeDetail);
+
+  function openDetail(seed) {
+    detailLabel.textContent = "Similar Footprints to " + (seed.bin != null && seed.bin !== "" ? seed.bin : "Selected");
+    detailLeft.innerHTML = `
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <path d="${seed.path}" fill="currentColor"/>
+      </svg>`;
+    detailLeft.style.color = "#000000";
+    detailLeft.onclick = closeDetail;
+
+    const similar = getSimilarBuildings(seed, 16);
+    detailSimilarGrid.innerHTML = "";
+    similar.forEach(b => {
+      const cell = document.createElement("div");
+      cell.className = "footprint-cell";
+      cell.innerHTML = `
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <path d="${b.path}" fill="currentColor"/>
+        </svg>`;
+      cell.onclick = (e) => { e.stopPropagation(); openDetail(b); };
+      detailSimilarGrid.appendChild(cell);
+    });
+
+    detailOverlay.classList.add("visible");
+    detailOverlay.setAttribute("aria-hidden", "false");
+  }
+
+  function closeDetail() {
+    detailOverlay.classList.remove("visible");
+    detailOverlay.setAttribute("aria-hidden", "true");
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && detailOverlay.classList.contains("visible")) closeDetail();
+  });
+
+  // Load
+  fetch("buildings.json")
+  .then(r => {
+    if (!r.ok) throw new Error(r.status === 404 ? "buildings.json not found. Run: python3 extract.py" : r.status);
+    return r.json();
+  })
+  .then(data => {
+    const raw = Array.isArray(data) ? data : [];
+    const MAX_RENDER = 10000;
+    buildings = raw.length > MAX_RENDER ? raw.slice(0, MAX_RENDER) : raw;
+    if (raw.length > MAX_RENDER) console.warn("Showing first " + MAX_RENDER + " of " + raw.length);
+    getNormalizedFeatures = normalizeFeatures(buildings);
+    document.getElementById("loading").remove();
+    renderGallery();
+  })
+  .catch(err => {
+    document.getElementById("loading").textContent = "Error: " + err.message;
+  });
+
+  async function loadBuilding(filename) {
+    const res = await fetch(`footprints/${filename}`);
+    const text = await res.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(text, "image/svg+xml");
+    const svg = doc.querySelector("svg");
+
+    buildings.push({
+      filename,
+      svg: svg.outerHTML,
+      bin: svg.getAttribute("data-bin"),
+      year: parseFloat(svg.getAttribute("data-year")) || 0,
+      height: parseFloat(svg.getAttribute("data-height")) || 0,
+      area: parseFloat(svg.getAttribute("data-area")) || 0,
+      boro: svg.getAttribute("data-boro"),
+    });
+  }
+
+  function getDisplayBuildings() {
+    if (!selectedBoro) return [...buildings];
+    return buildings.filter(b => String(b.boro) === selectedBoro);
+  }
+
+  function sortBuildings(arr) {
+    const [key, dir] = sortEl.value.split("-");
+    arr.sort((a, b) => dir === "asc" ? a[key] - b[key] : b[key] - a[key]);
+  }
+
+  function renderGallery() {
+    const displayBuildings = getDisplayBuildings();
+    sortBuildings(displayBuildings);
+
+    let maxArea = 0;
+    displayBuildings.forEach(b => { if (b.area > maxArea) maxArea = b.area; });
+
+    gallery.innerHTML = "";
+
+    const BATCH = 400;
+    let i = 0;
+    function addBatch() {
+      const end = Math.min(i + BATCH, displayBuildings.length);
+      const frag = document.createDocumentFragment();
+      for (; i < end; i++) {
+        const b = displayBuildings[i];
+        const cell = document.createElement("div");
+        cell.className = "footprint-cell";
+
+        if (!normalized && maxArea > 0) {
+          const scale = Math.sqrt(b.area / maxArea);
+          cell.style.transform = `scale(${Math.max(scale, 0.05)})`;
+        } else {
+          cell.style.transform = "";
+        }
+
+        cell.innerHTML = `
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <path d="${b.path}" fill="currentColor"/>
+  </svg>`;
+
+        cell.addEventListener("mousemove", e => {
+          tooltip.className = "tooltip visible";
+          tooltip.innerHTML = `
+          Year: ${b.year || "unknown"}<br>
+          Height: ${b.height ? b.height + " ft" : "unknown"}<br>
+          Area: ${b.area.toLocaleString()} sq ft
+        `;
+          const gap = 16;
+          const clientX = e.clientX;
+          const clientY = e.clientY;
+          requestAnimationFrame(() => {
+            const wouldOverflowRight = clientX + gap + tooltip.offsetWidth > window.innerWidth;
+            tooltip.style.left = wouldOverflowRight ? (clientX - tooltip.offsetWidth - gap) + "px" : (clientX + gap) + "px";
+            tooltip.style.top = clientY + gap + "px";
+          });
+        });
+
+        cell.addEventListener("mouseleave", () => { tooltip.className = "tooltip"; });
+
+        cell.addEventListener("click", () => openDetail(b));
+
+        frag.appendChild(cell);
+      }
+      gallery.appendChild(frag);
+      if (i < displayBuildings.length) requestAnimationFrame(addBatch);
+      else countEl.textContent = `${displayBuildings.length.toLocaleString()} buildings`;
+    }
+    addBatch();
+  }
+
+</script>
+</body>
+</html>
