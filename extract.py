@@ -57,11 +57,22 @@ for i, feature in enumerate(data["features"]):
         bbl = props.get("base_bbl") or ""
         boro_code = props.get("boro_code") or (str(bbl)[:1] if bbl else "")
 
+        # GeoJSON uses construction_year, height_roof, shape_area (shape_area is in sq ft; geom.area is in deg² and useless)
+        raw_year = props.get("construction_year") or props.get("cnstrct_yr")
+        year = int(raw_year) if raw_year not in (None, "") else 0
+        raw_height = props.get("height_roof") or props.get("heightroof")
+        height = float(raw_height) if raw_height not in (None, "") else 0
+        raw_area = props.get("shape_area")
+        if raw_area not in (None, ""):
+            area = round(float(raw_area), 2)
+        else:
+            area = 0
+
         output.append({
             "bin": props.get("bin", i),
-            "year": props.get("cnstrct_yr") or 0,
-            "height": props.get("heightroof") or 0,
-            "area": round(geom.area, 2),
+            "year": year,
+            "height": height,
+            "area": area,
             "boro": boro_code,
             "path": path_data
         })

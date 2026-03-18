@@ -357,19 +357,19 @@
   boroughEl.addEventListener("change", function() {
     selectedBoro = this.value;
     fitSelectWidth(boroughEl);
-    renderGallery();
     this.blur();
+    requestAnimationFrame(() => renderGallery());
   });
   sortEl.addEventListener("change", () => {
     fitSelectWidth(sortEl);
-    renderGallery();
     sortEl.blur();
+    requestAnimationFrame(() => renderGallery());
   });
   scaleEl.addEventListener("change", function() {
     normalized = this.value === "normalized";
     fitSelectWidth(scaleEl);
-    renderGallery();
     this.blur();
+    requestAnimationFrame(() => renderGallery());
   });
 
   // --- Shape features from SVG path ---
@@ -554,21 +554,42 @@
   }
 
   function getDisplayBuildings() {
-    if (!selectedBoro) return [...buildings];
-    return buildings.filter(b => String(b.boro) === selectedBoro);
+    const boroValue = boroughEl && boroughEl.value ? boroughEl.value : "";
+    if (!boroValue) return buildings.slice(0);
+    return buildings.filter(b => String(b.boro || "") === String(boroValue));
   }
 
   function sortBuildings(arr) {
-    const [key, dir] = sortEl.value.split("-");
-    arr.sort((a, b) => dir === "asc" ? a[key] - b[key] : b[key] - a[key]);
+    const raw = (sortEl && sortEl.value || "area-desc").trim();
+    const parts = raw.split("-");
+    const key = (parts[0] === "year" || parts[0] === "height" || parts[0] === "area") ? parts[0] : "area";
+    const dir = parts[1] === "asc" || parts[1] === "desc" ? parts[1] : "desc";
+    const asc = dir === "asc";
+    arr.sort((a, b) => {
+      const va = key === "area" ? (Number(a.area) || a._displayArea || 0) : (Number(a[key]) || 0);
+      const vb = key === "area" ? (Number(b.area) || b._displayArea || 0) : (Number(b[key]) || 0);
+      return asc ? va - vb : vb - va;
+    });
   }
 
   function renderGallery() {
     const displayBuildings = getDisplayBuildings();
+    // Path-derived area fallback when b.area is 0 (so sort/scale work before re-running extract)
+    displayBuildings.forEach(b => {
+      if (b._displayArea == null) {
+        const pts = parsePathPoints(b.path);
+        b._displayArea = pts.length >= 3 ? pathArea(pts) : (b.area || 1);
+      }
+    });
     sortBuildings(displayBuildings);
 
     let maxArea = 0;
-    displayBuildings.forEach(b => { if (b.area > maxArea) maxArea = b.area; });
+    displayBuildings.forEach(b => {
+      const a = b.area > 0 ? b.area : b._displayArea;
+      if (a > maxArea) maxArea = a;
+    });
+
+    const useTrueScale = scaleEl && scaleEl.value === "true-scale" && maxArea > 0;
 
     gallery.innerHTML = "";
 
@@ -582,24 +603,25 @@
         const cell = document.createElement("div");
         cell.className = "footprint-cell";
 
-        if (!normalized && maxArea > 0) {
-          const scale = Math.sqrt(b.area / maxArea);
-          cell.style.transform = `scale(${Math.max(scale, 0.05)})`;
+        if (useTrueScale) {
+          const areaForScale = b.area > 0 ? b.area : (b._displayArea || 1);
+          const s = Math.sqrt(areaForScale / maxArea);
+          const scale = Math.max(s, 0.05);
+          cell.innerHTML = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;transform:scale(${scale});transform-origin:center"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="${b.path}" fill="currentColor"/></svg></span>`;
         } else {
-          cell.style.transform = "";
+          cell.innerHTML = `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="${b.path}" fill="currentColor"/></svg>`;
         }
-
-        cell.innerHTML = `
-  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-    <path d="${b.path}" fill="currentColor"/>
-  </svg>`;
 
         cell.addEventListener("mousemove", e => {
           tooltip.className = "tooltip visible";
+          const yearStr = b.year && b.year > 0 ? String(b.year) : "—";
+          const heightStr = b.height && b.height > 0 ? b.height + " ft" : "—";
+          const areaVal = b.area > 0 ? b.area : (b._displayArea != null ? Math.round(b._displayArea) : 0);
+          const areaStr = b.area > 0 ? areaVal.toLocaleString() + " sq ft" : "— (footprint only)";
           tooltip.innerHTML = `
-          Year: ${b.year || "unknown"}<br>
-          Height: ${b.height ? b.height + " ft" : "unknown"}<br>
-          Area: ${b.area.toLocaleString()} sq ft
+          Year: ${yearStr}<br>
+          Height: ${heightStr}<br>
+          Area: ${areaStr}
         `;
           const gap = 16;
           const clientX = e.clientX;
