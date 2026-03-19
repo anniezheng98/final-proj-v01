@@ -8,12 +8,12 @@ with open("data/footprints.geojson") as f:
 
 SIZE = 200
 PADDING = 10
-# Limit so the browser can load and render (increase or remove for full export)
-MAX_BUILDINGS = 8000
+# Set to None to export all buildings (dataset is ~1.08M; buildings.json will be large)
+MAX_BUILDINGS = None
 output = []
 
 for i, feature in enumerate(data["features"]):
-    if len(output) >= MAX_BUILDINGS:
+    if MAX_BUILDINGS is not None and len(output) >= MAX_BUILDINGS:
         break
     try:
         geom = shape(feature["geometry"])

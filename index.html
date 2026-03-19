@@ -98,11 +98,59 @@
       letter-spacing: 0.06em;
     }
 
-    #gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-      gap: 0;
+    .gallery-scroll {
+      overflow-x: hidden;
+      overflow-y: auto;
+      height: calc(100vh - 24px - 24px);
+      background: #d3d3d3;
       padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .gallery-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    #gallery-spacer {
+      position: relative;
+      min-width: 0;
+    }
+    #gallery-viewport {
+      position: absolute;
+      left: 0;
+      top: 0;
+      pointer-events: none;
+      overflow: visible;
+    }
+    #gallery-viewport .gallery-viewport-inner {
+      pointer-events: auto;
+    }
+    #gallery-viewport > .gallery-viewport-inner > .gallery-row {
+      display: grid;
+      gap: 0;
+      pointer-events: auto;
+      height: 50px;
+      min-height: 50px;
+      max-height: 50px;
+    }
+    #gallery-viewport .footprint-cell {
+      width: 100%;
+      height: 50px;
+      min-width: 50px;
+      min-height: 50px;
+      max-height: 50px;
+      padding: 8px;
+      margin: 0;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    #gallery-viewport .footprint-cell svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
     }
 
     .footprint-cell {
@@ -148,30 +196,52 @@
     .tooltip.visible { display: block; }
 
     #loading {
-      padding: 80px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 48px;
       font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       color: #000000;
     }
 
-    body { padding-bottom: 44px; }
+    body { padding-bottom: 24px; }
 
     footer.toolbar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
+      height: 24px;
+      min-height: 24px;
       padding: 0 8px 0 0;
       background: #d3d3d3;
-      border-top: 1px solid #000000;
       display: flex;
       align-items: center;
       justify-content: flex-start;
       gap: 16px;
       z-index: 50;
+      box-sizing: border-box;
+    }
+    footer.toolbar::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 1px;
+      background: #000000;
+      z-index: 1;
+      pointer-events: none;
     }
 
     footer.toolbar .controls {
       margin: 0;
+      position: relative;
+      z-index: 0;
     }
 
     .detail-overlay {
@@ -311,8 +381,12 @@
   <div id="count"></div>
 </footer>
 
-<div id="loading">Loading footprints...</div>
-<div id="gallery"></div>
+<div id="loading">Loading footprints…</div>
+<div class="gallery-scroll" id="gallery-scroll" style="display: none;">
+  <div id="gallery-spacer">
+    <div id="gallery-viewport"></div>
+  </div>
+</div>
 <div id="detail-overlay" class="detail-overlay" aria-hidden="true">
   <div class="detail-header">
     <span class="detail-label" id="detail-label">Similar Footprints</span>
@@ -326,16 +400,29 @@
 <div class="tooltip" id="tooltip"></div>
 
 <script>
-  const gallery = document.getElementById("gallery");
+  const galleryScroll = document.getElementById("gallery-scroll");
+  const gallerySpacer = document.getElementById("gallery-spacer");
+  const galleryViewport = document.getElementById("gallery-viewport");
   const tooltip = document.getElementById("tooltip");
   const countEl = document.getElementById("count");
   const sortEl = document.getElementById("sort");
   const scaleEl = document.getElementById("scale");
   const boroughEl = document.getElementById("borough");
+  const loadingEl = document.getElementById("loading");
+
+  const CELL_SIZE = 50;
+  const ROW_BUFFER = 3;
+  const GALLERY_PADDING_BOTTOM = 0;
 
   let buildings = [];
   let normalized = true;
   let selectedBoro = "";
+  let currentDisplayBuildings = [];
+  let currentCols = 0;
+  let currentTotalRows = 0;
+  let currentMaxArea = 0;
+  let currentUseTrueScale = false;
+  let scrollRAF = null;
 
   const selectMeasure = document.createElement("span");
   selectMeasure.setAttribute("aria-hidden", "true");
@@ -517,6 +604,7 @@
   });
 
   // Load
+  loadingEl.textContent = "Loading footprints…";
   fetch("buildings.json")
   .then(r => {
     if (!r.ok) throw new Error(r.status === 404 ? "buildings.json not found. Run: python3 extract.py" : r.status);
@@ -524,15 +612,17 @@
   })
   .then(data => {
     const raw = Array.isArray(data) ? data : [];
-    const MAX_RENDER = 10000;
-    buildings = raw.length > MAX_RENDER ? raw.slice(0, MAX_RENDER) : raw;
-    if (raw.length > MAX_RENDER) console.warn("Showing first " + MAX_RENDER + " of " + raw.length);
-    getNormalizedFeatures = normalizeFeatures(buildings);
-    document.getElementById("loading").remove();
-    renderGallery();
+    buildings = raw;
+    loadingEl.textContent = "Preparing gallery…";
+    requestAnimationFrame(() => {
+      getNormalizedFeatures = normalizeFeatures(buildings);
+      loadingEl.style.display = "none";
+      galleryScroll.style.display = "block";
+      renderGallery();
+    });
   })
   .catch(err => {
-    document.getElementById("loading").textContent = "Error: " + err.message;
+    loadingEl.textContent = "Error: " + err.message;
   });
 
   async function loadBuilding(filename) {
@@ -572,9 +662,73 @@
     });
   }
 
+  function makeCell(b, maxArea, useTrueScale) {
+    const cell = document.createElement("div");
+    cell.className = "footprint-cell";
+    if (useTrueScale && maxArea > 0) {
+      const areaForScale = b.area > 0 ? b.area : (b._displayArea || 1);
+      const s = Math.sqrt(areaForScale / maxArea);
+      const scale = Math.max(s, 0.05);
+      cell.innerHTML = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;transform:scale(${scale});transform-origin:center"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="${b.path}" fill="currentColor"/></svg></span>`;
+    } else {
+      cell.innerHTML = `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="${b.path}" fill="currentColor"/></svg>`;
+    }
+    cell.addEventListener("mousemove", e => {
+      tooltip.className = "tooltip visible";
+      const yearStr = b.year && b.year > 0 ? String(b.year) : "—";
+      const heightStr = b.height && b.height > 0 ? b.height + " ft" : "—";
+      const areaVal = b.area > 0 ? b.area : (b._displayArea != null ? Math.round(b._displayArea) : 0);
+      const areaStr = b.area > 0 ? areaVal.toLocaleString() + " sq ft" : "— (footprint only)";
+      tooltip.innerHTML = `Year: ${yearStr}<br>Height: ${heightStr}<br>Area: ${areaStr}`;
+      const gap = 16;
+      requestAnimationFrame(() => {
+        const wouldOverflowRight = e.clientX + gap + tooltip.offsetWidth > window.innerWidth;
+        tooltip.style.left = wouldOverflowRight ? (e.clientX - tooltip.offsetWidth - gap) + "px" : (e.clientX + gap) + "px";
+        tooltip.style.top = e.clientY + gap + "px";
+      });
+    });
+    cell.addEventListener("mouseleave", () => { tooltip.className = "tooltip"; });
+    cell.addEventListener("click", () => openDetail(b));
+    return cell;
+  }
+
+  function paintVisibleRows() {
+    const list = currentDisplayBuildings;
+    const cols = currentCols;
+    const totalRows = currentTotalRows;
+    if (!cols || !list.length) return;
+    const scrollTop = galleryScroll.scrollTop;
+    const viewHeight = galleryScroll.clientHeight;
+    let firstRow = Math.max(0, Math.floor(scrollTop / CELL_SIZE) - ROW_BUFFER);
+    let lastRow = Math.min(totalRows - 1, Math.ceil((scrollTop + viewHeight) / CELL_SIZE) - 1 + ROW_BUFFER);
+    const topOffset = (firstRow * CELL_SIZE) - scrollTop;
+    galleryViewport.style.top = scrollTop + "px";
+    galleryViewport.style.width = "100%";
+    galleryViewport.innerHTML = "";
+    const inner = document.createElement("div");
+    inner.className = "gallery-viewport-inner";
+    inner.style.marginTop = topOffset + "px";
+    inner.style.width = "100%";
+    for (let r = firstRow; r <= lastRow; r++) {
+      const rowDiv = document.createElement("div");
+      rowDiv.className = "gallery-row";
+      rowDiv.style.display = "grid";
+      rowDiv.style.gridTemplateColumns = "repeat(" + cols + ", minmax(" + CELL_SIZE + "px, 1fr))";
+      rowDiv.style.height = CELL_SIZE + "px";
+      rowDiv.style.minHeight = CELL_SIZE + "px";
+      rowDiv.style.maxHeight = CELL_SIZE + "px";
+      const start = r * cols;
+      const end = Math.min(start + cols, list.length);
+      for (let i = start; i < end; i++) {
+        rowDiv.appendChild(makeCell(list[i], currentMaxArea, currentUseTrueScale));
+      }
+      inner.appendChild(rowDiv);
+    }
+    galleryViewport.appendChild(inner);
+  }
+
   function renderGallery() {
     const displayBuildings = getDisplayBuildings();
-    // Path-derived area fallback when b.area is 0 (so sort/scale work before re-running extract)
     displayBuildings.forEach(b => {
       if (b._displayArea == null) {
         const pts = parsePathPoints(b.path);
@@ -590,61 +744,41 @@
     });
 
     const useTrueScale = scaleEl && scaleEl.value === "true-scale" && maxArea > 0;
+    const w = galleryScroll.clientWidth || Math.max(100, (window.innerWidth || 800) - 20);
+    const cols = Math.max(1, Math.floor(w / CELL_SIZE));
+    const totalRows = Math.ceil(displayBuildings.length / cols);
 
-    gallery.innerHTML = "";
+    currentDisplayBuildings = displayBuildings;
+    currentCols = cols;
+    currentTotalRows = totalRows;
+    currentMaxArea = maxArea;
+    currentUseTrueScale = useTrueScale;
 
-    const BATCH = 400;
-    let i = 0;
-    function addBatch() {
-      const end = Math.min(i + BATCH, displayBuildings.length);
-      const frag = document.createDocumentFragment();
-      for (; i < end; i++) {
-        const b = displayBuildings[i];
-        const cell = document.createElement("div");
-        cell.className = "footprint-cell";
-
-        if (useTrueScale) {
-          const areaForScale = b.area > 0 ? b.area : (b._displayArea || 1);
-          const s = Math.sqrt(areaForScale / maxArea);
-          const scale = Math.max(s, 0.05);
-          cell.innerHTML = `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;transform:scale(${scale});transform-origin:center"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="${b.path}" fill="currentColor"/></svg></span>`;
-        } else {
-          cell.innerHTML = `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="${b.path}" fill="currentColor"/></svg>`;
-        }
-
-        cell.addEventListener("mousemove", e => {
-          tooltip.className = "tooltip visible";
-          const yearStr = b.year && b.year > 0 ? String(b.year) : "—";
-          const heightStr = b.height && b.height > 0 ? b.height + " ft" : "—";
-          const areaVal = b.area > 0 ? b.area : (b._displayArea != null ? Math.round(b._displayArea) : 0);
-          const areaStr = b.area > 0 ? areaVal.toLocaleString() + " sq ft" : "— (footprint only)";
-          tooltip.innerHTML = `
-          Year: ${yearStr}<br>
-          Height: ${heightStr}<br>
-          Area: ${areaStr}
-        `;
-          const gap = 16;
-          const clientX = e.clientX;
-          const clientY = e.clientY;
-          requestAnimationFrame(() => {
-            const wouldOverflowRight = clientX + gap + tooltip.offsetWidth > window.innerWidth;
-            tooltip.style.left = wouldOverflowRight ? (clientX - tooltip.offsetWidth - gap) + "px" : (clientX + gap) + "px";
-            tooltip.style.top = clientY + gap + "px";
-          });
-        });
-
-        cell.addEventListener("mouseleave", () => { tooltip.className = "tooltip"; });
-
-        cell.addEventListener("click", () => openDetail(b));
-
-        frag.appendChild(cell);
-      }
-      gallery.appendChild(frag);
-      if (i < displayBuildings.length) requestAnimationFrame(addBatch);
-      else countEl.textContent = `${displayBuildings.length.toLocaleString()} buildings`;
-    }
-    addBatch();
+    gallerySpacer.style.height = (totalRows * CELL_SIZE + GALLERY_PADDING_BOTTOM) + "px";
+    gallerySpacer.style.width = "100%";
+    countEl.textContent = displayBuildings.length.toLocaleString() + " buildings";
+    paintVisibleRows();
   }
+
+  galleryScroll.addEventListener("scroll", () => {
+    if (scrollRAF) cancelAnimationFrame(scrollRAF);
+    scrollRAF = requestAnimationFrame(() => {
+      paintVisibleRows();
+      scrollRAF = null;
+    });
+  });
+  window.addEventListener("resize", () => {
+    if (!currentDisplayBuildings.length) return;
+    const w = galleryScroll.clientWidth || window.innerWidth;
+    const cols = Math.max(1, Math.floor(w / CELL_SIZE));
+    if (cols !== currentCols) {
+      currentCols = cols;
+      currentTotalRows = Math.ceil(currentDisplayBuildings.length / cols);
+      gallerySpacer.style.height = (currentTotalRows * CELL_SIZE + GALLERY_PADDING_BOTTOM) + "px";
+      gallerySpacer.style.width = "100%";
+    }
+    paintVisibleRows();
+  });
 
 </script>
 </body>
