@@ -679,8 +679,7 @@
       const heightStr = b.height && b.height > 0 ? b.height + " ft" : "—";
       const areaVal = b.area > 0 ? b.area : (b._displayArea != null ? Math.round(b._displayArea) : 0);
       const areaStr = b.area > 0 ? areaVal.toLocaleString() + " sq ft" : "— (footprint only)";
-      const typeStr = b.type || "—";
-      tooltip.innerHTML = `Year: ${yearStr}<br>Height: ${heightStr}<br>Area: ${areaStr}<br>Type: ${typeStr}`;
+      tooltip.innerHTML = `Year: ${yearStr}<br>Height: ${heightStr}<br>Area: ${areaStr}`;
       const gap = 16;
       requestAnimationFrame(() => {
         const wouldOverflowRight = e.clientX + gap + tooltip.offsetWidth > window.innerWidth;
