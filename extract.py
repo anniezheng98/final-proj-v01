@@ -10,6 +10,22 @@ SIZE = 200
 PADDING = 10
 # Set to None to export all buildings (dataset is ~1.08M; buildings.json will be large)
 MAX_BUILDINGS = None
+
+# NYC Building Footprints FEATURE_CODE → human-readable type (from CityOfNewYork/nyc-geo-metadata)
+FEATURE_CODE_LABELS = {
+    "1000": "Parking",
+    "1001": "Gas Station Canopy",
+    "1002": "Storage Tank",
+    "1003": "Placeholder",
+    "1004": "Auxiliary Structure",
+    "1005": "Temporary Structure",
+    "1006": "Cantilevered Building",
+    "2100": "Building",
+    "2110": "Skybridge",
+    "5100": "Building Under Construction",
+    "5110": "Garage",
+}
+
 output = []
 
 for i, feature in enumerate(data["features"]):
@@ -68,13 +84,18 @@ for i, feature in enumerate(data["features"]):
         else:
             area = 0
 
+        fc = str(props.get("feature_code") or "").strip() or None
+        type_label = FEATURE_CODE_LABELS.get(fc, "Other") if fc else "Other"
+
         output.append({
             "bin": props.get("bin", i),
             "year": year,
             "height": height,
             "area": area,
             "boro": boro_code,
-            "path": path_data
+            "path": path_data,
+            "feature_code": fc,
+            "type": type_label,
         })
 
     except Exception as e:
