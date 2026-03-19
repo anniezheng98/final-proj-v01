@@ -490,7 +490,7 @@
   <div id="count"></div>
 </footer>
 
-<div id="loading">Loading footprints…</div>
+<div id="loading">Concrete jungle loading...</div>
 <div class="gallery-scroll" id="gallery-scroll" style="display: none;">
   <div id="gallery-spacer">
     <div id="gallery-viewport"></div>
@@ -773,7 +773,7 @@
   });
 
   // Load
-  loadingEl.textContent = "Loading footprints…";
+  loadingEl.textContent = "Concrete jungle loading...";
   fetch("buildings.json")
   .then(r => {
     if (!r.ok) throw new Error(r.status === 404 ? "buildings.json not found. Run: python3 extract.py" : r.status);
