@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Cataloguing Our City's Footprints</title>
+  <title>Our City's Footprints</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -20,13 +20,30 @@
       top: 0;
       z-index: 10;
       height: 24px;
-      padding: 0 48px 0 8px;
+      padding: 0 8px 0 8px;
       border-bottom: 1px solid #000000;
       display: flex;
       align-items: center;
       justify-content: space-between;
       box-sizing: border-box;
       background: #d3d3d3;
+    }
+
+    .header-about {
+      margin-left: auto;
+      font-size: 0.6rem;
+      font-family: "Hanken Grotesk", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #000000;
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .header-about:hover {
+      color: #444444;
     }
 
     h1 {
@@ -345,12 +362,104 @@
       background: #d3d3d3;
       color: blue;
     }
+
+    .about-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: #d3d3d3;
+      flex-direction: column;
+    }
+
+    .about-overlay.visible {
+      display: flex;
+    }
+
+    .about-header {
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px;
+      border-bottom: 1px solid #000000;
+      flex-shrink: 0;
+    }
+
+    .about-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 24px;
+      padding: 0;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 0.6rem;
+      font-family: "Hanken Grotesk", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #000000;
+    }
+
+    .about-close:hover {
+      color: #666666;
+    }
+
+    .about-body {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      min-height: 0;
+    }
+
+    .about-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 42rem;
+    }
+
+    .about-body .about-hero {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      filter: grayscale(100%);
+      margin-bottom: 32px;
+    }
+
+    .about-body .about-text {
+      font-size: 0.6rem;
+      line-height: 1.3;
+      text-transform: uppercase;
+      text-align: center;
+      letter-spacing: 0.06em;
+      color: #000000;
+      font-family: "Hanken Grotesk", sans-serif;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .about-body .about-text p {
+      margin-bottom: 16px;
+    }
+
+    .about-body .about-text p:last-child {
+      margin-bottom: 0;
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>Cataloguing Our City's Footprints</h1>
+  <h1>Our City's Footprints</h1>
+  <a href="#" class="header-about" id="about-link" role="button">ABOUT</a>
 </header>
 <footer class="toolbar">
   <div class="controls">
@@ -398,6 +507,23 @@
   </div>
 </div>
 <div class="tooltip" id="tooltip"></div>
+
+<div id="about-overlay" class="about-overlay" aria-hidden="true">
+  <div class="about-header">
+    <span></span>
+    <button type="button" class="about-close" id="about-close" aria-label="Close">Close</button>
+  </div>
+  <div class="about-body">
+    <div class="about-content">
+      <img src="assets/about-1.png" alt="" class="about-hero" id="about-hero-img">
+      <div class="about-text">
+        <p>Our cities are mostly experienced vertically — skylines, heights, rooflines. But there's another dimension we rarely see with our own eyes: the city's footprint. How much ground each building takes up, and what shape it leaves on the earth.</p>
+        <p>Maps show us the city from above — buildings in relation to streets, to each other, to the land they sit on. For this project, I wanted to strip all of that away. To pull each building out of its context and look at it alone. What can the shape of a building tell us when it has nothing around it? This is partly an investigation, partly an excuse to make something that looks cool.</p>
+        <p>…And here are some of the things I learned about the city I live from the ground level.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
   const galleryScroll = document.getElementById("gallery-scroll");
@@ -568,6 +694,44 @@
 
   detailCloseBtn.addEventListener("click", closeDetail);
 
+  const aboutOverlay = document.getElementById("about-overlay");
+  const aboutLink = document.getElementById("about-link");
+  const aboutCloseBtn = document.getElementById("about-close");
+  const aboutHeroImg = document.getElementById("about-hero-img");
+
+  const ABOUT_HERO_FRAMES = ["assets/about-1.png", "assets/about-2.png", "assets/about-3.png"];
+  const ABOUT_HERO_INTERVAL_MS = 1000;
+  let aboutHeroIntervalId = null;
+
+  function startAboutHeroLoop() {
+    let frameIndex = 0;
+    aboutHeroImg.src = ABOUT_HERO_FRAMES[0];
+    aboutHeroIntervalId = setInterval(() => {
+      frameIndex = (frameIndex + 1) % ABOUT_HERO_FRAMES.length;
+      aboutHeroImg.src = ABOUT_HERO_FRAMES[frameIndex];
+    }, ABOUT_HERO_INTERVAL_MS);
+  }
+
+  function stopAboutHeroLoop() {
+    if (aboutHeroIntervalId != null) {
+      clearInterval(aboutHeroIntervalId);
+      aboutHeroIntervalId = null;
+    }
+  }
+
+  aboutLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    aboutOverlay.classList.add("visible");
+    aboutOverlay.setAttribute("aria-hidden", "false");
+    startAboutHeroLoop();
+  });
+
+  aboutCloseBtn.addEventListener("click", () => {
+    aboutOverlay.classList.remove("visible");
+    aboutOverlay.setAttribute("aria-hidden", "true");
+    stopAboutHeroLoop();
+  });
+
   function openDetail(seed) {
     detailLabel.textContent = "Similar Footprints to " + (seed.bin != null && seed.bin !== "" ? seed.bin : "Selected");
     detailLeft.innerHTML = `
@@ -600,7 +764,12 @@
   }
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && detailOverlay.classList.contains("visible")) closeDetail();
+    if (e.key !== "Escape") return;
+    if (aboutOverlay.classList.contains("visible")) {
+      aboutOverlay.classList.remove("visible");
+      aboutOverlay.setAttribute("aria-hidden", "true");
+      stopAboutHeroLoop();
+    } else if (detailOverlay.classList.contains("visible")) closeDetail();
   });
 
   // Load
