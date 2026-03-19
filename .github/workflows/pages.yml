@@ -1,0 +1,43 @@
+# Deploy to GitHub Pages with real LFS files (buildings.json).
+# In repo Settings → Pages, set "Source" to "GitHub Actions".
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: github-pages
+    steps:
+      - name: Checkout (with LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Prepare site
+        run: |
+          mkdir -p _site
+          cp index.html buildings.json _site/
+          [ -d footprints ] && cp -r footprints _site/ || true
+          [ -d data ] && cp -r data _site/ || true
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy
+        uses: actions/deploy-pages@v4
