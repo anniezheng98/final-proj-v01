@@ -269,6 +269,10 @@
       z-index: 0;
     }
 
+    body.about-open footer.toolbar {
+      display: none;
+    }
+
     .detail-overlay {
       display: none;
       position: fixed;
@@ -731,12 +735,14 @@
     e.preventDefault();
     aboutOverlay.classList.add("visible");
     aboutOverlay.setAttribute("aria-hidden", "false");
+    document.body.classList.add("about-open");
     startAboutHeroLoop();
   });
 
   aboutCloseBtn.addEventListener("click", () => {
     aboutOverlay.classList.remove("visible");
     aboutOverlay.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("about-open");
     stopAboutHeroLoop();
   });
 
@@ -776,6 +782,7 @@
     if (aboutOverlay.classList.contains("visible")) {
       aboutOverlay.classList.remove("visible");
       aboutOverlay.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("about-open");
       stopAboutHeroLoop();
     } else if (detailOverlay.classList.contains("visible")) closeDetail();
   });
