@@ -438,14 +438,6 @@
       max-width: 42rem;
     }
 
-    .about-body .about-hero {
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-      filter: grayscale(100%);
-      margin-bottom: 32px;
-    }
-
     .about-body .about-text {
       font-size: 0.6rem;
       line-height: 1.3;
@@ -527,7 +519,6 @@
   </div>
   <div class="about-body">
     <div class="about-content">
-      <img src="assets/about-1.png" alt="" class="about-hero" id="about-hero-img">
       <div class="about-text">
         <p>Our cities are mostly experienced vertically — skylines, heights, rooflines. But there's another dimension we rarely see with our own eyes: the city's footprint. How much ground each building takes up, and what shape it leaves on the earth.</p>
         <p>Maps show us the city from above — buildings in relation to streets, to each other, to the land they sit on. For this project, I wanted to strip all of that away. To pull each building out of its context and look at it alone. What can the shape of a building tell us when it has nothing around it? This is partly an investigation, partly an excuse to make something that looks cool.</p>
@@ -709,41 +700,18 @@
   const aboutOverlay = document.getElementById("about-overlay");
   const aboutLink = document.getElementById("about-link");
   const aboutCloseBtn = document.getElementById("about-close");
-  const aboutHeroImg = document.getElementById("about-hero-img");
-
-  const ABOUT_HERO_FRAMES = ["assets/about-1.png", "assets/about-2.png", "assets/about-3.png"];
-  const ABOUT_HERO_INTERVAL_MS = 1000;
-  let aboutHeroIntervalId = null;
-
-  function startAboutHeroLoop() {
-    let frameIndex = 0;
-    aboutHeroImg.src = ABOUT_HERO_FRAMES[0];
-    aboutHeroIntervalId = setInterval(() => {
-      frameIndex = (frameIndex + 1) % ABOUT_HERO_FRAMES.length;
-      aboutHeroImg.src = ABOUT_HERO_FRAMES[frameIndex];
-    }, ABOUT_HERO_INTERVAL_MS);
-  }
-
-  function stopAboutHeroLoop() {
-    if (aboutHeroIntervalId != null) {
-      clearInterval(aboutHeroIntervalId);
-      aboutHeroIntervalId = null;
-    }
-  }
 
   aboutLink.addEventListener("click", (e) => {
     e.preventDefault();
     aboutOverlay.classList.add("visible");
     aboutOverlay.setAttribute("aria-hidden", "false");
     document.body.classList.add("about-open");
-    startAboutHeroLoop();
   });
 
   aboutCloseBtn.addEventListener("click", () => {
     aboutOverlay.classList.remove("visible");
     aboutOverlay.setAttribute("aria-hidden", "true");
     document.body.classList.remove("about-open");
-    stopAboutHeroLoop();
   });
 
   function openDetail(seed) {
@@ -783,7 +751,6 @@
       aboutOverlay.classList.remove("visible");
       aboutOverlay.setAttribute("aria-hidden", "true");
       document.body.classList.remove("about-open");
-      stopAboutHeroLoop();
     } else if (detailOverlay.classList.contains("visible")) closeDetail();
   });
 
