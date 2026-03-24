@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="assets/average-footprint.svg">
   <title>Intro — NYC Footprints</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -206,7 +207,7 @@
 <body>
 
 <header>
-  <h1><a href="index.html">NYC Footprints</a></h1>
+  <h1><a href="index.html?from=intro">NYC Footprints</a></h1>
   <a href="index.html#about" class="header-about">ABOUT</a>
 </header>
 
@@ -410,6 +411,7 @@
       currentIndex++;
       render();
     } else if (currentIndex === 8) {
+      sessionStorage.setItem("intro_seen", "1");
       window.location.href = "index.html";
     } else if (currentIndex < STEPS.length - 1) {
       currentIndex++;
