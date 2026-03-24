@@ -52,7 +52,7 @@
 
     .header-about {
       margin-left: auto;
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       font-family: "Hanken Grotesk", sans-serif;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -69,7 +69,7 @@
     }
 
     header h1 {
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       font-weight: normal;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -88,7 +88,7 @@
 
     h1 span {
       color: #000000;
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       margin-left: 12px;
     }
 
@@ -106,7 +106,7 @@
     }
 
     .controls label {
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: #000000;
@@ -114,7 +114,7 @@
     }
 
     .controls select {
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       font-family: "Hanken Grotesk", sans-serif;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -128,6 +128,7 @@
       box-sizing: border-box;
       width: auto;
       min-width: 0;
+      flex-shrink: 0;
       color: #000000;
       transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
@@ -141,11 +142,19 @@
     }
 
     #count {
-      font-size: 0.6rem;
+      font-size: 0.65rem;
+      font-family: "Hanken Grotesk", sans-serif;
+      line-height: 1;
       color: #000000;
       margin-left: auto;
+      padding: 2px 0 6px 0;
       text-transform: uppercase;
       letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      height: var(--header-footer-height);
+      box-sizing: border-box;
+      transform: translateY(-1px);
     }
 
     .gallery-scroll {
@@ -232,7 +241,7 @@
       background: #d3d3d3;
       color: #000000;
       font-family: "Hanken Grotesk", sans-serif;
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
       padding: 8px 12px;
@@ -252,7 +261,7 @@
       justify-content: center;
       min-height: 100vh;
       padding: 48px;
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: #000000;
@@ -309,7 +318,7 @@
     }
 
     .detail-label {
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       font-weight: normal;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -325,7 +334,7 @@
       background: none;
       border-radius: 0;
       cursor: pointer;
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       font-family: "Hanken Grotesk", sans-serif;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -468,7 +477,7 @@
 
   const selectMeasure = document.createElement("span");
   selectMeasure.setAttribute("aria-hidden", "true");
-  selectMeasure.style.cssText = "position:absolute;left:-9999px;visibility:hidden;white-space:nowrap;font-family:'Hanken Grotesk',sans-serif;font-size:0.6rem;text-transform:uppercase;letter-spacing:0.06em;";
+  selectMeasure.style.cssText = "position:absolute;left:-9999px;visibility:hidden;white-space:nowrap;font-family:'Hanken Grotesk',sans-serif;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em;";
   document.body.appendChild(selectMeasure);
 
   function fitSelectWidth(select) {
