@@ -1,0 +1,187 @@
+[
+  {
+    "decade": 1650,
+    "avgArea": 357.66,
+    "count": 1
+  },
+  {
+    "decade": 1660,
+    "avgArea": 274.41,
+    "count": 2
+  },
+  {
+    "decade": 1680,
+    "avgArea": 330.05,
+    "count": 1
+  },
+  {
+    "decade": 1690,
+    "avgArea": 480.99,
+    "count": 2
+  },
+  {
+    "decade": 1700,
+    "avgArea": 424.31,
+    "count": 1
+  },
+  {
+    "decade": 1710,
+    "avgArea": 408.06,
+    "count": 1
+  },
+  {
+    "decade": 1720,
+    "avgArea": 225.9,
+    "count": 6
+  },
+  {
+    "decade": 1730,
+    "avgArea": 563.43,
+    "count": 2
+  },
+  {
+    "decade": 1740,
+    "avgArea": 390.17,
+    "count": 1
+  },
+  {
+    "decade": 1750,
+    "avgArea": 347.69,
+    "count": 2
+  },
+  {
+    "decade": 1760,
+    "avgArea": 869.63,
+    "count": 3
+  },
+  {
+    "decade": 1770,
+    "avgArea": 240.53,
+    "count": 4
+  },
+  {
+    "decade": 1780,
+    "avgArea": 352.8,
+    "count": 3
+  },
+  {
+    "decade": 1790,
+    "avgArea": 646.79,
+    "count": 6
+  },
+  {
+    "decade": 1800,
+    "avgArea": 139.54,
+    "count": 227
+  },
+  {
+    "decade": 1810,
+    "avgArea": 291.4,
+    "count": 48
+  },
+  {
+    "decade": 1820,
+    "avgArea": 201.95,
+    "count": 303
+  },
+  {
+    "decade": 1830,
+    "avgArea": 238.01,
+    "count": 509
+  },
+  {
+    "decade": 1840,
+    "avgArea": 246.11,
+    "count": 1302
+  },
+  {
+    "decade": 1850,
+    "avgArea": 230.02,
+    "count": 1871
+  },
+  {
+    "decade": 1860,
+    "avgArea": 276.61,
+    "count": 1592
+  },
+  {
+    "decade": 1870,
+    "avgArea": 224.49,
+    "count": 2865
+  },
+  {
+    "decade": 1880,
+    "avgArea": 249.3,
+    "count": 5264
+  },
+  {
+    "decade": 1890,
+    "avgArea": 184.9,
+    "count": 28598
+  },
+  {
+    "decade": 1900,
+    "avgArea": 256.08,
+    "count": 48320
+  },
+  {
+    "decade": 1910,
+    "avgArea": 229.57,
+    "count": 78519
+  },
+  {
+    "decade": 1920,
+    "avgArea": 195.27,
+    "count": 261589
+  },
+  {
+    "decade": 1930,
+    "avgArea": 241.91,
+    "count": 197593
+  },
+  {
+    "decade": 1940,
+    "avgArea": 189.91,
+    "count": 93622
+  },
+  {
+    "decade": 1950,
+    "avgArea": 279.23,
+    "count": 107893
+  },
+  {
+    "decade": 1960,
+    "avgArea": 376.34,
+    "count": 69798
+  },
+  {
+    "decade": 1970,
+    "avgArea": 388.26,
+    "count": 36074
+  },
+  {
+    "decade": 1980,
+    "avgArea": 291.63,
+    "count": 34749
+  },
+  {
+    "decade": 1990,
+    "avgArea": 345.91,
+    "count": 32170
+  },
+  {
+    "decade": 2000,
+    "avgArea": 305.99,
+    "count": 47230
+  },
+  {
+    "decade": 2010,
+    "avgArea": 583.06,
+    "count": 14841
+  },
+  {
+    "decade": 2020,
+    "avgArea": 738.71,
+    "count": 7766
+  }
+]
