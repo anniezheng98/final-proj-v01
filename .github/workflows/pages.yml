@@ -30,7 +30,7 @@ jobs:
       - name: Prepare site
         run: |
           mkdir -p _site data
-          cp index.html intro.html buildings.json _site/
+          cp index.html intro.html about.html buildings.json _site/
           python3 decade_averages.py && python3 most_irregular.py || true
           cp -r data _site/ 2>/dev/null || true
           [ -d assets ] && cp -r assets _site/ || true

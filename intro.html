@@ -22,6 +22,7 @@
       top: 0;
       z-index: 10;
       height: 24px;
+      max-height: 24px;
       padding: 0 8px 0 8px;
       border-bottom: 1px solid #000000;
       display: flex;
@@ -29,6 +30,8 @@
       justify-content: space-between;
       box-sizing: border-box;
       background: #d3d3d3;
+      line-height: 1;
+      overflow: hidden;
     }
 
     .header-about {
@@ -37,6 +40,7 @@
       font-family: "Hanken Grotesk", sans-serif;
       text-transform: uppercase;
       letter-spacing: 0.06em;
+      line-height: 1;
       color: #000000;
       text-decoration: none;
     }
@@ -50,11 +54,13 @@
       font-weight: normal;
       text-transform: uppercase;
       letter-spacing: 0.06em;
+      line-height: 1;
     }
 
     header h1 a {
       color: #000000;
       text-decoration: none;
+      line-height: inherit;
     }
 
     header h1 a:hover {
@@ -208,7 +214,7 @@
 
 <header>
   <h1><a href="index.html?from=intro">NYC Footprints</a></h1>
-  <a href="index.html#about" class="header-about">ABOUT</a>
+  <a href="about.html" class="header-about">ABOUT</a>
 </header>
 
 <div class="intro-main">
