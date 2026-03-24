@@ -115,6 +115,7 @@
 
     .intro-viz-panel.borough-preview {
       flex-direction: column;
+      align-items: flex-start;
       gap: 12px;
       height: auto;
       min-height: 200px;
@@ -326,13 +327,13 @@
     if (currentIndex === 3 && showSquare) {
       vizPanel.style.visibility = "visible";
       vizPanel.style.pointerEvents = "auto";
-      vizPanel.className = "intro-viz-panel";
-      vizPanel.innerHTML = "<object data='assets/most-common-footprint.svg' type='image/svg+xml'></object>";
+      vizPanel.className = "intro-viz-panel borough-preview";
+      vizPanel.innerHTML = "<div class='borough-square'><object data='assets/most-common-footprint.svg' type='image/svg+xml'></object></div><div class='borough-caption'>Most common footprint shape</div>";
     } else if (currentIndex === 4 && showAverageSquare) {
       vizPanel.style.visibility = "visible";
       vizPanel.style.pointerEvents = "auto";
-      vizPanel.className = "intro-viz-panel";
-      vizPanel.innerHTML = "<object data='assets/average-footprint.svg' type='image/svg+xml'></object>";
+      vizPanel.className = "intro-viz-panel borough-preview";
+      vizPanel.innerHTML = "<div class='borough-square'><object data='assets/average-footprint.svg' type='image/svg+xml'></object></div><div class='borough-caption'>Average shape of all footprints</div>";
     } else if ((currentIndex === 5 && showDecadeChart) || currentIndex === 6) {
       vizPanel.style.visibility = "visible";
       vizPanel.style.pointerEvents = "auto";
