@@ -19,6 +19,16 @@
       --header-footer-height: 24px;
     }
 
+    html.is-loading,
+    body.is-loading {
+      overflow: hidden;
+      height: 100%;
+    }
+
+    body.is-loading {
+      overscroll-behavior: none;
+    }
+
     body {
       background: #d3d3d3;
       font-family: "Hanken Grotesk", sans-serif;
@@ -272,6 +282,31 @@
       color: #000000;
     }
 
+    .loading-footprints {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin-bottom: 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loading-footprints img,
+    .loading-footprints-gif {
+      width: 88%;
+      height: 88%;
+      object-fit: contain;
+      display: block;
+    }
+
+    #loading .loading-text {
+      margin: 0;
+      text-align: center;
+      max-width: 20rem;
+    }
+
     body { padding-bottom: 56px; }
 
     footer.toolbar {
@@ -439,7 +474,12 @@
   <div id="count"></div>
 </footer>
 
-<div id="loading">Concrete jungle loading...</div>
+<div id="loading">
+  <div class="loading-footprints" id="loading-footprints" aria-hidden="true">
+    <img src="assets/loading-footprints.gif" alt="" class="loading-footprints-gif" width="120" height="120" decoding="async" />
+  </div>
+  <p class="loading-text" id="loading-text">Concrete jungle loading...</p>
+</div>
 <div class="gallery-scroll" id="gallery-scroll" style="display: none;">
   <div id="gallery-spacer">
     <div id="gallery-viewport"></div>
@@ -467,6 +507,7 @@
   const scaleEl = document.getElementById("scale");
   const boroughEl = document.getElementById("borough");
   const loadingEl = document.getElementById("loading");
+  const loadingTextEl = document.getElementById("loading-text");
 
   const CELL_SIZE = 50;
   const ROW_BUFFER = 3;
@@ -670,8 +711,14 @@
     if (detailOverlay.classList.contains("visible")) closeDetail();
   });
 
+  function setLoadingScrollLock(locked) {
+    document.documentElement.classList.toggle("is-loading", locked);
+    document.body.classList.toggle("is-loading", locked);
+  }
+
   // Load
-  loadingEl.textContent = "Concrete jungle loading...";
+  setLoadingScrollLock(true);
+  if (loadingTextEl) loadingTextEl.textContent = "Concrete jungle loading...";
   fetch("buildings.json")
   .then(r => {
     if (!r.ok) throw new Error(r.status === 404 ? "buildings.json not found. Run: python3 extract.py" : r.status);
@@ -680,16 +727,17 @@
   .then(data => {
     const raw = Array.isArray(data) ? data : [];
     buildings = raw;
-    loadingEl.textContent = "Preparing gallery…";
     requestAnimationFrame(() => {
       getNormalizedFeatures = normalizeFeatures(buildings);
+      setLoadingScrollLock(false);
       loadingEl.style.display = "none";
       galleryScroll.style.display = "block";
       renderGallery();
     });
   })
   .catch(err => {
-    loadingEl.textContent = "Error: " + err.message;
+    setLoadingScrollLock(false);
+    if (loadingTextEl) loadingTextEl.textContent = "Error: " + err.message;
   });
 
   async function loadBuilding(filename) {
