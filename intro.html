@@ -15,6 +15,7 @@
       font-family: "Hanken Grotesk", sans-serif;
       color: #000000;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     header {
@@ -67,31 +68,62 @@
       color: #444444;
     }
 
-    .intro-main {
-      display: grid;
-      grid-template-columns: minmax(0, 400px) 1fr;
-      gap: 48px;
-      padding: 8px;
-      align-items: stretch;
+    .intro-text-wrap {
+      position: relative;
+      z-index: 2;
+      width: 100%;
       min-height: calc(100vh - 24px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+
+    .intro-text-wrap .intro-container,
+    .intro-text-wrap .back-link {
+      pointer-events: auto;
     }
 
     .intro-container {
       min-width: 0;
-      max-width: 400px;
+      max-width: 450px;
+      width: 100%;
+      text-align: center;
+    }
+
+    #intro-float-root {
+      position: fixed;
+      top: 24px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .intro-float-art {
+      position: absolute;
+      pointer-events: none;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .intro-float-art .intro-viz-panel.borough-preview {
+      max-width: min(160px, 100%);
     }
 
     .intro-viz-panel {
-      width: 200px;
-      height: 200px;
-      justify-self: center;
-      align-self: center;
+      width: 160px;
+      height: 160px;
       border: 1px solid #000000;
       background: transparent;
       display: flex;
       align-items: center;
       justify-content: center;
-      visibility: hidden;
     }
 
     .intro-viz-panel img,
@@ -101,30 +133,54 @@
       object-fit: contain;
     }
 
-    .intro-viz-panel.bar-chart {
-      width: 456px;
-      height: 480px;
-      padding: 8px;
-      border: none;
+    .intro-viz-panel.borough-preview .borough-square.chart-bounds {
+      width: 160px;
+      height: 160px;
+      max-width: min(160px, calc(100vw - 32px));
+      max-height: min(160px, calc(100vh - 80px));
+      padding: 4px;
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
-    .intro-viz-panel.bar-chart svg {
+    .intro-viz-panel.borough-preview .chart-bounds .bar-chart-inner {
       width: 100%;
       height: 100%;
+      min-height: 0;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .intro-viz-panel.borough-preview .chart-bounds .bar-chart-inner svg {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      flex-shrink: 1;
+      display: block;
     }
 
     .intro-viz-panel.borough-preview {
       flex-direction: column;
-      align-items: flex-start;
+      align-items: stretch;
       gap: 8px;
+      width: 160px;
+      max-width: min(160px, calc(100vw - 32px));
       height: auto;
-      min-height: 200px;
+      min-width: 0;
+      min-height: 0;
+      box-sizing: border-box;
       border: none;
     }
 
     .intro-viz-panel.borough-preview .borough-square {
-      width: 200px;
-      height: 200px;
+      width: 160px;
+      height: 160px;
+      max-width: min(160px, calc(100vw - 32px));
+      max-height: min(160px, calc(100vh - 80px));
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -142,13 +198,20 @@
       font-size: 0.65rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      text-align: left;
+      text-align: center;
       line-height: 1.3;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
     }
 
     .intro-step {
       margin-bottom: 12px;
       transition: color 0.3s ease;
+      text-align: center;
     }
 
     .intro-step.inactive {
@@ -165,6 +228,7 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       margin-bottom: 8px;
+      text-align: center;
     }
 
     .intro-step .step-prompt {
@@ -173,6 +237,7 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       margin-top: 12px;
+      text-align: center;
     }
 
     .intro-step .step-viz {
@@ -182,12 +247,13 @@
 
     a.back-link {
       display: inline-block;
-      margin: 48px 8px 0;
+      margin-top: 32px;
       font-size: 0.65rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: #000000;
       text-decoration: none;
+      text-align: center;
     }
 
     a.back-link:hover {
@@ -218,11 +284,12 @@
   <a href="about.html" class="header-about">ABOUT</a>
 </header>
 
-<div class="intro-main">
+<div id="intro-float-root" aria-hidden="true"></div>
+
+<div class="intro-text-wrap">
   <div class="intro-container" id="intro-container"></div>
-  <div class="intro-viz-panel" id="intro-viz-panel" role="img" aria-label="Footprint shape visualization"></div>
+  <a href="index.html" class="back-link" id="back-link" style="display: none;">← Back to NYC Footprints</a>
 </div>
-<a href="index.html" class="back-link" id="back-link" style="display: none;">← Back to NYC Footprints</a>
 
 <script>
   const STEPS = [
@@ -237,8 +304,8 @@
       viz: null
     },
     {
-      text: "Across five boroughs, we have 1.08 million building footprints to analyze from 1652 to 2026 (Thank you NYC Open Data).",
-      html: "Across five boroughs, we have 1.08 million building footprints to analyze from 1652 to 2026 (Thank you <a href='https://data.cityofnewyork.us/City-Government/Building-Footprints-Map-/jh45-qr5r' target='_blank' rel='noopener noreferrer' class='intro-link'>NYC Open Data</a>).",
+      text: "Across five boroughs, we have 1.08 million building footprints to analyze from the years 1652 to 2026 (Thank you NYC Open Data).",
+      html: "Across five boroughs, we have 1.08 million building footprints to analyze from the years 1652 to 2026 (Thank you <a href='https://data.cityofnewyork.us/City-Government/Building-Footprints-Map-/jh45-qr5r' target='_blank' rel='noopener noreferrer' class='intro-link'>NYC Open Data</a>).",
       prompt: true,
       viz: null
     },
@@ -248,7 +315,7 @@
       viz: null
     },
     {
-      text: "Now that's kind of boring but expected right? What if you averaged all 1.08 million footprints into one?",
+      text: "Now that's kind of boring but expected right? But what if you averaged all 1.08 million footprints into one?",
       prompt: true,
       viz: null
     },
@@ -269,7 +336,7 @@
       viz: null
     },
     {
-      text: "That's a glimpse into the hidden geometry of New York. Now go explore the concrete jungle on your own!",
+      text: "That's a glimpse into the hidden geometry of New York. Thanks for stopping by, now go explore the concrete jungle on your own!",
       prompt: true,
       viz: null
     }
@@ -279,83 +346,258 @@
   let complete = false;
   let showSquare = false;
   let showAverageSquare = false;
-  let showDecadeChart = false;
   let decadeData = null;
   let selectedBoroughPreview = null;
   const container = document.getElementById("intro-container");
-  const vizPanel = document.getElementById("intro-viz-panel");
+  const floatRoot = document.getElementById("intro-float-root");
   const backLink = document.getElementById("back-link");
+
+  const placedRects = [];
+  const PLACE_GAP = 10;
+  const BOROUGH_FLOAT_W = 160;
+  const BOROUGH_FLOAT_H = 240;
+  const CHART_FLOAT_W = 160;
+  const CHART_FLOAT_H = 240;
+
+  function rectsOverlap(a, b, gap) {
+    const ax1 = a.left - gap, ax2 = a.left + a.w + gap;
+    const ay1 = a.top - gap, ay2 = a.top + a.h + gap;
+    const bx1 = b.left - gap, bx2 = b.left + b.w + gap;
+    const by1 = b.top - gap, by2 = b.top + b.h + gap;
+    return !(ax2 <= bx1 || bx2 <= ax1 || ay2 <= by1 || by2 <= ay1);
+  }
+
+  function getFloatLayerSize() {
+    const r = floatRoot.getBoundingClientRect();
+    return {
+      w: Math.max(0, r.width),
+      h: Math.max(0, r.height)
+    };
+  }
+
+  function clampRectToLayer(rect, vw, vh, margin) {
+    const maxW = Math.max(0, vw - 2 * margin);
+    const maxH = Math.max(0, vh - 2 * margin);
+    const w = Math.max(1, Math.min(rect.w, maxW));
+    const h = Math.max(1, Math.min(rect.h, maxH));
+    const maxLeft = margin + Math.max(0, maxW - w);
+    const maxTop = margin + Math.max(0, maxH - h);
+    const left = Math.min(Math.max(margin, rect.left), maxLeft);
+    const top = Math.min(Math.max(margin, rect.top), maxTop);
+    return { left, top, w, h };
+  }
+
+  function mergeRectsBounding(rects) {
+    if (!rects.length) return null;
+    let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+    for (const r of rects) {
+      x1 = Math.min(x1, r.left);
+      y1 = Math.min(y1, r.top);
+      x2 = Math.max(x2, r.left + r.w);
+      y2 = Math.max(y2, r.top + r.h);
+    }
+    return { left: x1, top: y1, w: x2 - x1, h: y2 - y1 };
+  }
+
+  function getTextExclusionRects() {
+    const { w: vw, h: vh } = getFloatLayerSize();
+    const fr = floatRoot.getBoundingClientRect();
+    const pad = 20;
+    const parts = [];
+    const container = document.getElementById("intro-container");
+    if (container) {
+      const r = container.getBoundingClientRect();
+      parts.push({
+        left: r.left - fr.left - pad,
+        top: r.top - fr.top - pad,
+        w: r.width + 2 * pad,
+        h: r.height + 2 * pad
+      });
+    }
+    const back = document.getElementById("back-link");
+    if (back && back.offsetParent !== null && back.style.display !== "none") {
+      const r = back.getBoundingClientRect();
+      parts.push({
+        left: r.left - fr.left - pad,
+        top: r.top - fr.top - pad,
+        w: r.width + 2 * pad,
+        h: r.height + 2 * pad
+      });
+    }
+    const minW = Math.min(vw * 0.92, 450);
+    const minH = vh * 0.65;
+    parts.push({
+      left: (vw - minW) / 2,
+      top: (vh - minH) / 2,
+      w: minW,
+      h: minH
+    });
+    const merged = mergeRectsBounding(parts);
+    return merged ? [merged] : [];
+  }
+
+  function tryPlaceRect(w, h, gap) {
+    const { w: vw, h: vh } = getFloatLayerSize();
+    const margin = 12;
+    const maxW = Math.max(0, vw - 2 * margin);
+    const maxH = Math.max(0, vh - 2 * margin);
+    const wClamped = Math.min(w, maxW);
+    const hClamped = Math.min(h, maxH);
+    if (wClamped < 1 || hClamped < 1 || maxW < 1 || maxH < 1) {
+      return { left: margin, top: margin, w: Math.max(1, wClamped), h: Math.max(1, hClamped) };
+    }
+    const maxLeft = vw - wClamped - 2 * margin;
+    const maxTop = vh - hClamped - 2 * margin;
+    if (maxLeft < 0 || maxTop < 0) {
+      return { left: margin, top: margin, w: wClamped, h: hClamped };
+    }
+    const textBlocks = getTextExclusionRects();
+    const blocked = textBlocks.concat(placedRects);
+    function clearOfBlocked(rect) {
+      return blocked.every(p => !rectsOverlap(rect, p, gap));
+    }
+    for (let attempt = 0; attempt < 450; attempt++) {
+      const left = margin + Math.random() * maxLeft;
+      const top = margin + Math.random() * maxTop;
+      const rect = { left, top, w: wClamped, h: hClamped };
+      if (clearOfBlocked(rect)) {
+        return rect;
+      }
+    }
+    const golden = 2.39996322972865332;
+    for (let attempt = 0; attempt < 200; attempt++) {
+      const t = attempt * golden;
+      const r = 18 + Math.sqrt(attempt + 1) * 22;
+      const cx = margin + maxLeft / 2;
+      const cy = margin + maxTop / 2;
+      let left = cx + Math.cos(t) * r - wClamped / 2;
+      let top = cy + Math.sin(t) * r - hClamped / 2;
+      left = Math.min(Math.max(margin, left), margin + maxLeft);
+      top = Math.min(Math.max(margin, top), margin + maxTop);
+      const rect = { left, top, w: wClamped, h: hClamped };
+      if (clearOfBlocked(rect)) {
+        return rect;
+      }
+    }
+    for (let gy = 0; gy < 6; gy++) {
+      for (let gx = 0; gx < 6; gx++) {
+        const left = margin + (gx / 5) * maxLeft;
+        const top = margin + (gy / 5) * maxTop;
+        const rect = { left, top, w: wClamped, h: hClamped };
+        if (clearOfBlocked(rect)) {
+          return rect;
+        }
+      }
+    }
+    const lastChance = [
+      { left: vw - wClamped - margin, top: vh - hClamped - margin },
+      { left: vw - wClamped - margin, top: margin },
+      { left: margin, top: vh - hClamped - margin },
+      { left: margin, top: margin }
+    ];
+    for (const p of lastChance) {
+      const left = Math.min(Math.max(margin, p.left), margin + Math.max(0, maxLeft));
+      const top = Math.min(Math.max(margin, p.top), margin + Math.max(0, maxTop));
+      const rect = { left, top, w: wClamped, h: hClamped };
+      if (clearOfBlocked(rect)) {
+        return rect;
+      }
+    }
+    return { left: margin, top: margin, w: wClamped, h: hClamped };
+  }
+
+  function clearFloatLayer() {
+    floatRoot.innerHTML = "";
+    placedRects.length = 0;
+  }
+
+  function addFloatSlot(html, w, h) {
+    const { w: vw, h: vh } = getFloatLayerSize();
+    const margin = 12;
+    const raw = tryPlaceRect(w, h, PLACE_GAP);
+    const rect = clampRectToLayer(raw, vw, vh, margin);
+    placedRects.push({ left: rect.left, top: rect.top, w: rect.w, h: rect.h });
+    const wrap = document.createElement("div");
+    wrap.className = "intro-float-art";
+    wrap.style.left = rect.left + "px";
+    wrap.style.top = rect.top + "px";
+    wrap.setAttribute("role", "img");
+    wrap.innerHTML = html;
+    floatRoot.appendChild(wrap);
+  }
 
   function render() {
     container.innerHTML = "";
-    for (let i = 0; i <= currentIndex; i++) {
-      const step = STEPS[i];
-      const isActive = i === currentIndex;
-      const showPrompt = step.prompt && isActive && !complete;
+    const step = complete ? STEPS[STEPS.length - 1] : STEPS[currentIndex];
+    const showPrompt = !complete && step.prompt;
 
-      const block = document.createElement("div");
-      block.className = "intro-step " + (isActive ? "active" : "inactive");
+    const block = document.createElement("div");
+    block.className = "intro-step active";
 
-      const textEl = document.createElement("div");
-      textEl.className = "step-text";
-      if (step.html) {
-        textEl.innerHTML = step.html;
-      } else {
-        textEl.textContent = step.text;
-      }
-      block.appendChild(textEl);
-
-      if (step.viz) {
-        const vizEl = document.createElement("div");
-        vizEl.className = "step-viz";
-        vizEl.innerHTML = step.viz;
-        block.appendChild(vizEl);
-      }
-
-      if (showPrompt) {
-        const promptEl = document.createElement("div");
-        promptEl.className = "step-prompt";
-        promptEl.textContent = "(↵ PRESS ENTER TO CONTINUE)";
-        block.appendChild(promptEl);
-      }
-
-      container.appendChild(block);
+    const textEl = document.createElement("div");
+    textEl.className = "step-text";
+    if (step.html) {
+      textEl.innerHTML = step.html;
+    } else {
+      textEl.textContent = step.text;
     }
+    block.appendChild(textEl);
+
+    if (step.viz) {
+      const vizEl = document.createElement("div");
+      vizEl.className = "step-viz";
+      vizEl.innerHTML = step.viz;
+      block.appendChild(vizEl);
+    }
+
+    if (showPrompt) {
+      const promptEl = document.createElement("div");
+      promptEl.className = "step-prompt";
+      promptEl.textContent = "(↵ PRESS ENTER TO CONTINUE)";
+      block.appendChild(promptEl);
+    }
+
+    container.appendChild(block);
 
     backLink.style.display = complete ? "inline-block" : "none";
 
+    clearFloatLayer();
+
     if (currentIndex === 3 && showSquare) {
-      vizPanel.style.visibility = "visible";
-      vizPanel.style.pointerEvents = "auto";
-      vizPanel.className = "intro-viz-panel borough-preview";
-      vizPanel.innerHTML = "<div class='borough-square'><object data='assets/most-common-footprint.svg' type='image/svg+xml'></object></div><div class='borough-caption'>Most common footprint shape</div>";
+      addFloatSlot(
+        "<div class=\"intro-viz-panel borough-preview\"><div class=\"borough-square\"><object data=\"assets/most-common-footprint.svg\" type=\"image/svg+xml\"></object></div><div class=\"borough-caption\">Most common footprint shape</div></div>",
+        BOROUGH_FLOAT_W,
+        BOROUGH_FLOAT_H
+      );
     } else if (currentIndex === 4 && showAverageSquare) {
-      vizPanel.style.visibility = "visible";
-      vizPanel.style.pointerEvents = "auto";
-      vizPanel.className = "intro-viz-panel borough-preview";
-      vizPanel.innerHTML = "<div class='borough-square'><object data='assets/average-footprint.svg' type='image/svg+xml'></object></div><div class='borough-caption'>Average shape of all footprints</div>";
-    } else if ((currentIndex === 5 && showDecadeChart) || currentIndex === 6) {
-      vizPanel.style.visibility = "visible";
-      vizPanel.style.pointerEvents = "auto";
-      vizPanel.className = "intro-viz-panel bar-chart";
-      vizPanel.innerHTML = decadeData
+      addFloatSlot(
+        "<div class=\"intro-viz-panel borough-preview\"><div class=\"borough-square\"><object data=\"assets/average-footprint.svg\" type=\"image/svg+xml\"></object></div><div class=\"borough-caption\">Average shape of all footprints</div></div>",
+        BOROUGH_FLOAT_W,
+        BOROUGH_FLOAT_H
+      );
+    } else if (currentIndex === 6) {
+      const { w: fw, h: fh } = getFloatLayerSize();
+      const chartW = Math.min(CHART_FLOAT_W, Math.max(80, fw - 32));
+      const chartH = Math.min(CHART_FLOAT_H, Math.max(80, fh - 32));
+      const chartInner = decadeData
         ? buildDecadeBarChart(decadeData)
-        : "<div style='font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em'>Loading…</div>";
+        : "<div style=\"font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em\">Loading…</div>";
+      addFloatSlot(
+        "<div class=\"intro-viz-panel borough-preview\"><div class=\"borough-square chart-bounds\"><div class=\"bar-chart-inner\">" + chartInner + "</div></div><div class=\"borough-caption\">AVG SQ FT FROM 1650 to 2020</div></div>",
+        chartW,
+        chartH
+      );
     } else if (currentIndex === 7 && selectedBoroughPreview) {
-      vizPanel.style.visibility = "visible";
-      vizPanel.style.pointerEvents = "auto";
-      vizPanel.className = "intro-viz-panel borough-preview";
-      vizPanel.innerHTML = "<div class='borough-square'><object data='assets/most-irregular-" + selectedBoroughPreview + ".svg' type='image/svg+xml'></object></div><div class='borough-caption'>Most irregular building shape (compactness ratio:<br>perimeter² / area)</div>";
-    } else {
-      vizPanel.style.visibility = "hidden";
-      vizPanel.style.pointerEvents = "none";
-      vizPanel.className = "intro-viz-panel";
-      vizPanel.innerHTML = "";
+      addFloatSlot(
+        "<div class=\"intro-viz-panel borough-preview\"><div class=\"borough-square\"><object data=\"assets/most-irregular-" + selectedBoroughPreview + ".svg\" type=\"image/svg+xml\"></object></div><div class=\"borough-caption\">Most irregular building shape (compactness ratio:<br>perimeter² / area)</div></div>",
+        BOROUGH_FLOAT_W,
+        BOROUGH_FLOAT_H
+      );
     }
   }
 
   function buildDecadeBarChart(data) {
-    const pad = { top: 12, right: 52, bottom: 24, left: 42 };
+    const pad = { top: 14, right: 14, bottom: 14, left: 14 };
     const chartW = 456;
     const chartH = 480;
     const w = chartW - pad.left - pad.right;
@@ -372,15 +614,7 @@
       path += `M ${pad.left} ${y} L ${pad.left} ${y + barHeight} L ${pad.left + barW} ${y + barHeight} L ${pad.left + barW} ${y} Z `;
     }
 
-    const textStyle = 'font-size="8px" font-family="Hanken Grotesk,sans-serif" letter-spacing="0.06em" text-transform="uppercase" fill="#000"';
-    let labels = "";
-    for (let i = 0; i < data.length; i++) {
-      const d = data[i];
-      const y = pad.top + i * (barHeight + barGap) + barHeight / 2;
-      labels += `<text x="${pad.left - 6}" y="${y + 3}" ${textStyle} text-anchor="end">${d.decade}</text>`;
-    }
-
-    return `<svg viewBox="0 0 ${chartW} ${chartH}" xmlns="http://www.w3.org/2000/svg"><rect fill="transparent" width="${chartW}" height="${chartH}"/><path d="${path}" fill="#000000"/>${labels}<text x="${pad.left + w / 2}" y="${chartH - 4}" ${textStyle} text-anchor="middle">AVG SQ FT</text></svg>`;
+    return `<svg viewBox="0 0 ${chartW} ${chartH}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><rect fill="transparent" width="${chartW}" height="${chartH}"/><path d="${path}" fill="#000000"/></svg>`;
   }
 
   function advance() {
@@ -398,18 +632,14 @@
       currentIndex++;
       showAverageSquare = false;
       render();
-    } else if (currentIndex === 5 && !showDecadeChart) {
-      showDecadeChart = true;
-      if (decadeData) {
-        render();
-      } else {
+    } else if (currentIndex === 5) {
+      currentIndex++;
+      if (!decadeData) {
         fetch("data/decade-averages.json")
           .then(r => r.ok ? r.json() : Promise.reject(r.status))
           .then(d => { decadeData = d; render(); })
-          .catch(() => { showDecadeChart = false; render(); });
+          .catch(() => { decadeData = null; render(); });
       }
-    } else if (currentIndex === 5 && showDecadeChart) {
-      currentIndex++;
       render();
     } else if (currentIndex === 6) {
       currentIndex++;
@@ -442,10 +672,7 @@
     } else if (currentIndex === 6) {
       currentIndex--;
       render();
-    } else if (currentIndex === 5 && showDecadeChart) {
-      showDecadeChart = false;
-      render();
-    } else if (currentIndex === 5 && !showDecadeChart) {
+    } else if (currentIndex === 5) {
       currentIndex--;
       showAverageSquare = true;
       render();
